@@ -585,6 +585,8 @@ func openLogFile(logger *log.Logger, logPath string) {
 					_ = curLog.Close()
 				}
 				curLog = newLog
+			} else {
+				panic(err)
 			}
 
 			// Wait for a SIGHUP
