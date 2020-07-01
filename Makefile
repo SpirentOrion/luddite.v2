@@ -11,7 +11,7 @@ endif
 all: vet build test
 
 vet:
-	cd $(BUILD_PATH) && go vet -all -composites=false -shadow=true ./...
+	cd $(BUILD_PATH) && go vet -all -composites=false ./...
 
 build:
 	cd $(BUILD_PATH) && go build .

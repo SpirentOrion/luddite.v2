@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/dimfeld/httptreemux"
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/SpirentOrion/trace.v2"
@@ -190,7 +190,7 @@ func (s *Service) Run() (err error) {
 }
 
 func (s *Service) addMetricsRoute() {
-	h := prometheus.UninstrumentedHandler()
+	h := promhttp.Handler()
 	s.globalRouter.GET(s.config.Metrics.URIPath, h.ServeHTTP)
 }
 
@@ -365,7 +365,7 @@ func (s *Service) run() error {
 	// If metrics are enabled let Prometheus have a look at the request first
 	var h http.HandlerFunc
 	if config.Metrics.Enabled {
-		h = prometheus.InstrumentHandler("service", s)
+		h = promhttp.Handler().ServeHTTP
 	} else {
 		h = s.ServeHTTP
 	}
