@@ -362,13 +362,8 @@ func (s *Service) run() error {
 		return err
 	}
 
-	// If metrics are enabled let Prometheus have a look at the request first
 	var h http.HandlerFunc
-	if config.Metrics.Enabled {
-		h = promhttp.Handler().ServeHTTP
-	} else {
-		h = s.ServeHTTP
-	}
+	h = s.ServeHTTP
 
 	// Run the HTTP server
 	if err = http.Serve(l, h); err != nil {
