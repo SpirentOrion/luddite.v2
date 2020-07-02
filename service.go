@@ -366,7 +366,49 @@ func (s *Service) run() error {
 	// If metrics are enabled let Prometheus have a look at the request first
 	var h http.HandlerFunc
 	if config.Metrics.Enabled {
-		h = promhttp.InstrumentMetricHandler(prometheus.DefaultRegisterer, s).ServeHTTP
+		httpReqCounter := prometheus.NewCounterVec(
+			prometheus.CounterOpts{
+				Name: "http_requests_total",
+				Help: "Total number of HTTP requests made.",
+			},
+			[]string{"code", "method"},
+		)
+
+		httpReqDuration := prometheus.NewSummaryVec(
+			prometheus.SummaryOpts{
+				Name:       "http_request_duration_seconds",
+				Help:       "The HTTP request latencies in seconds.",
+				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+			},
+			[]string{"code", "method"},
+		)
+
+		httpReqSize := prometheus.NewSummaryVec(
+			prometheus.SummaryOpts{
+				Name:       "http_request_size_bytes",
+				Help:       "The HTTP request sizes in bytes.",
+				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+			},
+			[]string{"code", "method"},
+		)
+
+		httpResSize := prometheus.NewSummaryVec(
+			prometheus.SummaryOpts{
+				Name:       "http_response_size_bytes",
+				Help:       "The HTTP response sizes in bytes.",
+				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+			},
+			[]string{"code", "method"},
+		)
+
+		prometheus.MustRegister(httpReqCounter, httpReqDuration, httpReqSize, httpResSize)
+		h = promhttp.InstrumentHandlerCounter(httpReqCounter,
+			promhttp.InstrumentHandlerDuration(httpReqDuration,
+				promhttp.InstrumentHandlerRequestSize(httpReqSize,
+					promhttp.InstrumentHandlerResponseSize(httpResSize, s),
+				),
+			),
+		).ServeHTTP
 	} else {
 		h = s.ServeHTTP
 	}
