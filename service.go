@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/dimfeld/httptreemux"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
@@ -365,7 +366,7 @@ func (s *Service) run() error {
 	// If metrics are enabled let Prometheus have a look at the request first
 	var h http.HandlerFunc
 	if config.Metrics.Enabled {
-		h = promhttp.Handler().ServeHTTP
+		h = promhttp.InstrumentMetricHandler(prometheus.DefaultRegisterer, s).ServeHTTP
 	} else {
 		h = s.ServeHTTP
 	}
