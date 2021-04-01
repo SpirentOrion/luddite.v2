@@ -56,7 +56,7 @@ func RequestNextLink(r *http.Request, cursor string) *url.URL {
 
 func RequestPageSize(r *http.Request) (pageSize int) {
 	var err error
-	if pageSize, err = strconv.Atoi(r.Header.Get(HeaderSpirentPageSize)); err != nil {
+	if pageSize, err = strconv.Atoi(r.Header.Get(HeaderSpirentPageSize)); err != nil || pageSize <= 0 {
 		pageSize = math.MaxInt32
 	}
 	return
