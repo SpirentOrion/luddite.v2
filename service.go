@@ -522,6 +522,10 @@ func (s *Service) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			if sessionId != "" {
 				fields["session_id"] = sessionId
 			}
+			pageSize := req.Header.Get(HeaderSpirentPageSize)
+			if pageSize != "" {
+				fields["page_size"] = pageSize
+			}
 			entry := s.accessLogger.WithFields(fields)
 			if status/100 != 5 {
 				entry.Info()
